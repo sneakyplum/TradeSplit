@@ -1,35 +1,26 @@
-import Stripe from "stripe";
-import { NextApiRequest, NextApiResponse } from "next";
+import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-01-28.clover",
-});
-export default async function POST(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  if (req.method === "POST") {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Your Product Name',
-            },
-            unit_amount: 1000, // Price in cents
-          },
-          quantity: 1,
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+
+export async function POST(req: Request) {
+  const { amount, invoiceId } = await req.json();
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["klarna", "card"],
+    line_items: [{
+      price_data: {
+        currency: "usd",
+        product_data: { 
+          name: `Payment for Invoice #${invoiceId}`, // This shows up on the Klarna screen
         },
-      ],
-      mode: 'payment',
-      success_url: `${req.headers.origin}/success`,
-      cancel_url: `${req.headers.origin}/cancel`,
-    });
-    res.status(200).json({ id: session.id });
-  } else {
-    res.setHeader("Allow", "POST");
-    res.status(405).end("Method Not Allowed");
-  }
+        unit_amount: Math.round(parseFloat(amount) * 100), // Turn "750.00" into 75000
+      },
+      quantity: 1,
+    }],
+    mode: "payment",
+    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?status=success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?status=cancelled`,
+  });
+
+  return Response.json({ url: session.url });
 }

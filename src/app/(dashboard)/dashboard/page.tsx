@@ -1,41 +1,50 @@
 "use client";
 
 import JobberButton from "@/components/JobberButton";
-// import { Button } from "@/components/ui/button"
-// import { auth } from "@/lib/auth";
-// import { authClient } from "@/lib/auth-client";
-// import { headers } from "next/headers";
 import { useEffect, useState } from "react";
-
+// You don't actually need loadStripe for this redirect method, so we can omit it to save space
 
 const Dashboard = () => {
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // const jobberAuth = async () => {
-  //   const jobberOauth = await authClient.signIn.oauth2({
-  //     providerId: "jobber", // required
-  //     callbackURL: "/dashboard",
+  const handlePay = async (invoiceId: string, balance: string) => {
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          amount: balance, 
+          invoiceId: invoiceId 
+        }),
+      });
 
-  //   });
+      const { url } = await response.json();
+      if (url) {
+        window.location.assign(url);
+      } else {
+        alert("Failed to create checkout session");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+    }
+  };
 
-  // }
-
-    const [userData, setUserData] = useState<any>(null);
-
-    useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await fetch('/api/jobber', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: `
               query SampleTask {
                 invoices {
                   nodes {
+                    id
                     amounts {
-                      total,
+                      total
                       invoiceBalance
                     }
                   }
@@ -45,41 +54,65 @@ const Dashboard = () => {
           }),
         });
 
-        const data = await response.json();
-        setUserData(data);
+        const result = await response.json();
+        
+        // --- PRO TIP: If Jobber is empty, inject a fake invoice so you can test Stripe! ---
+        if (!result.data?.invoices?.nodes || result.data.invoices.nodes.length === 0) {
+           console.log("No real invoices found, showing a test invoice.");
+           result.data = {
+             invoices: {
+               nodes: [
+                 { id: "MOCK-123", amounts: { total: "750.00", invoiceBalance: "750.00" } }
+               ]
+             }
+           };
+        }
+
+        setUserData(result);
       } catch (error) {
         console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
-  return (
-    <div>
-      <JobberButton />
-      {/* <h1>Status: {session ? "Connected" : "Not Connected"}</h1>
-      <pre>{JSON.stringify(session?.user, null, 2)}</pre> */}
-      {userData && (
-      <div>
-        {/* To get the cost: extensions -> cost -> actualQueryCost */}
-        <p>Query Cost: {userData.data?.invoices?.nodes[0]?.amounts?.total}</p>
-        
-        {/* To get the jobs: data -> jobs -> nodes (it's an array!) */}
-        <h3>Invoices:</h3>
-        <ul>
-          {userData.data?.invoices?.nodes.map((invoice: any) => (
-            <li key={invoice.id}>
-              Invoice #{invoice.id}: ${invoice.amounts.total} (Balance: ${invoice.amounts.invoiceBalance})
-            </li>
-          ))}
-        </ul>
-        
-        {/* If the array is empty, show a fallback */}
-        {userData.data?.jobs?.nodes.length === 0 && <p>No jobs found.</p>}
-      </div>
-    )}
-    </div>
-  )
-}
 
-export default Dashboard
+  if (loading) return <div className="p-10">Loading Dashboard...</div>;
+
+  const invoices = userData?.data?.invoices?.nodes || [];
+
+  return (
+    <div className="p-10">
+      <JobberButton />
+      
+      <h2 className="text-2xl font-bold mt-8 mb-4">Your Invoices</h2>
+      
+      {invoices.length === 0 ? (
+        <p>No invoices found in your Jobber account.</p>
+      ) : (
+        <div className="space-y-4">
+          {invoices.map((invoice: any) => (
+            <div key={invoice.id} className="border p-4 rounded-lg flex justify-between items-center shadow-sm">
+              <div>
+                <p className="font-bold text-lg">Invoice #{invoice.id}</p>
+                <p className="text-gray-600">Total: ${invoice.amounts.total}</p>
+                <p className="text-blue-600 font-medium">Balance: ${invoice.amounts.invoiceBalance}</p>
+              </div>
+              
+              <button 
+                onClick={() => handlePay(invoice.id, invoice.amounts.invoiceBalance)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
+              >
+                Pay with Klarna
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dashboard;
