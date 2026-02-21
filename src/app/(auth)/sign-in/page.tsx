@@ -10,7 +10,7 @@ export default function Home() {
   const signIn = async () => {
     const data = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "http://localhost:3000" // Optional: Redirect after successful sign-in
+      callbackURL: "/dashboard" // Optional: Redirect after successful sign-in
     });
   };
 

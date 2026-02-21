@@ -1,0 +1,11 @@
+Project is for trades people (probably narrow down that to some residential trade)
+
+using jobber to pull invoices and jobs to be able to be paid with klarna to boost the trades business money and have payments paid sooner as the customer wouldnt have to pay a 3k bill or however much the cost is straight out of pocket they can pay it in increments
+
+API's for this Project
+
+jobber
+
+stripe/klarna
+
+resend for the email to the customer for them to pay it (was looking at twilio for sms messages but there was no free tier so if proved pmf I can add twilio cause that should seem better quality)
