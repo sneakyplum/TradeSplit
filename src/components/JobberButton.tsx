@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 const JobberButton = () => {
 
   const jobberOauth = async () => {
-    const jobberOauthResult = await authClient.signIn.oauth2({
+    const jobberOauthResult = await authClient.oauth2.link({
       providerId: "jobber", // required
       callbackURL: "/dashboard",
     });

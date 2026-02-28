@@ -1,3 +1,4 @@
+
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import prisma from './prisma'
@@ -7,6 +8,12 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  account: {
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true, // This stops the "email doesn't match" error
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },
