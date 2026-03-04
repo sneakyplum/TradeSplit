@@ -27,7 +27,7 @@ export const auth = betterAuth({
   plugins: [
     genericOAuth({ 
       config: [ 
-        { 
+        {  
           providerId: "jobber", 
           clientId: process.env.JOBBER_CLIENT_ID!, 
           clientSecret: process.env.JOBBER_CLIENT_SECRET!, 
