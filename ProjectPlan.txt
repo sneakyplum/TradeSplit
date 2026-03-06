@@ -9,3 +9,8 @@ jobber
 stripe/klarna
 
 resend for the email to the customer for them to pay it (was looking at twilio for sms messages but there was no free tier so if proved pmf I can add twilio cause that should seem better quality)
+
+----------------------------------------------------------------------------------------------------------------------
+
+
+future plan for this was to add a new custom prisma table to be able to handle the jobber invoice email to be able to pull and store that for the slug for both the email which would use resend and also the stripe payment to send them the slug link in the resend email and the stripe page would have the x amount theyd need to pay with the ability to pay with klarna in split payments and then to solve the issue for the money getting sent to me instead of the money getting sent from the client to the business owner when they pay however much they owe id be using stripe connect instead

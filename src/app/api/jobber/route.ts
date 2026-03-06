@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 export async function POST() {
 
+  try {
   const session = await auth.api.getSession({
     headers: await headers()
   });
@@ -47,6 +48,15 @@ export async function POST() {
       "Content-Type": "application/json",
     },
   });
+  } catch (error) {
+    console.error("Error fetching data from Jobber:", error);
+    return new Response(JSON.stringify({ error: "Failed to fetch data from Jobber" }), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      status: 500,
+    });
+  }
 }
 
 export async function GET() {

@@ -105,7 +105,7 @@ const Dashboard = () => {
                 onClick={() => handlePay(invoice.id, invoice.amounts.invoiceBalance)}
                 className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
               >
-                Pay with Klarna
+                Send Payment to client
               </button>
             </div>
           ))}
